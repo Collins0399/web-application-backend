@@ -37,8 +37,8 @@ public class MemberRegistrationImpl implements memberRegistrationService {
                 .fullName(memberRegistration.getFullName())
                 .email(memberRegistration.getEmail())
                 .phone(memberRegistration.getPhone())
-                .DOB (memberRegistration.getDOB())
-                .address(memberRegistration.getAddress())
+                .DOB (memberRegistration.getDob())
+                .Address(memberRegistration.getAddress())
                 .dateJoined(memberRegistration.getDateJoined())
                 .build();
     }
@@ -49,7 +49,7 @@ public class MemberRegistrationImpl implements memberRegistrationService {
         member.setFullName(memberDto.getFullName());
         member.setEmail(memberDto.getEmail());
         member.setPhone(memberDto.getPhone());
-        member.setDOB(memberDto.getDOB());
+        member.setDob(memberDto.getDOB());
         member.setAddress(memberDto.getAddress());
         member.setDateJoined(LocalDate.now());
         member = memberRegistrationRepository.save(member);
@@ -64,7 +64,7 @@ public class MemberRegistrationImpl implements memberRegistrationService {
             member.setFullName(memberDto.getFullName());
             member.setEmail(memberDto.getEmail());
             member.setPhone(memberDto.getPhone());
-            member.setDOB(memberDto.getDOB());
+            member.setDob(memberDto.getDOB());
             member.setAddress(memberDto.getAddress());
             member = memberRegistrationRepository.save(member);
             return mapToMemberRegistrationDto(member);

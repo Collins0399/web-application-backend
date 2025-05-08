@@ -30,7 +30,7 @@ public class memberRegistrationController {
         member.setFullName(memberDto.getFullName());
         member.setEmail(memberDto.getEmail());
         member.setPhone(memberDto.getPhone());
-        member.setDOB(memberDto.getDOB());
+        member.setDob(memberDto.getDOB());
         member.setAddress(memberDto.getAddress());
         member.setDateJoined(memberDto.getDateJoined());
         memberRegistrationRepository.save(member);
@@ -44,7 +44,7 @@ public class memberRegistrationController {
             existingMember.setFullName(memberDto.getFullName());
             existingMember.setEmail(memberDto.getEmail());
             existingMember.setPhone(memberDto.getPhone());
-            existingMember.setDOB(memberDto.getDOB());
+            existingMember.setDob(memberDto.getDOB());
             existingMember.setAddress(memberDto.getAddress());
             existingMember.setDateJoined(memberDto.getDateJoined());
             memberRegistrationRepository.save(existingMember);

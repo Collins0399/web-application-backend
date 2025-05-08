@@ -24,7 +24,7 @@ public class memberRegistration {
     private String fullName;
     private String email;
     private String phone;
-    private String DOB;
+    private LocalDate dob;
     private String Address;
     @CreationTimestamp
     private LocalDate dateJoined;

@@ -17,7 +17,7 @@ public class memberRegistrationDto {
     private String fullName;
     private String email;
     private String phone;
-    private String DOB;
-    private String address;
+    private LocalDate DOB;
+    private String Address;
     private LocalDate dateJoined;
 }
