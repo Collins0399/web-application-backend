@@ -11,13 +11,15 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class memberRegistrationDto {
+public class MemberRegistrationDto {
     private Long id;
     private String memberId;
     private String fullName;
     private String email;
     private String phone;
-    private LocalDate DOB;
-    private String Address;
+    private LocalDate dob;
+    private String address;
     private LocalDate dateJoined;
+    private String password;
+    private String confirmPassword;
 }

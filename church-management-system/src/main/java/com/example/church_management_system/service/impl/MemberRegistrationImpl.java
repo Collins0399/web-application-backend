@@ -1,10 +1,11 @@
 package com.example.church_management_system.service.impl;
 
-import com.example.church_management_system.Models.memberRegistration;
-import com.example.church_management_system.Dto.memberRegistrationDto;
-import com.example.church_management_system.repository.memberRegistrationRepository;
-import com.example.church_management_system.service.memberRegistrationService;
+import com.example.church_management_system.Models.MemberRegistration;
+import com.example.church_management_system.Dto.MemberRegistrationDto;
+import com.example.church_management_system.repository.MemberRegistrationRepository;
+import com.example.church_management_system.service.MemberRegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,17 +14,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class MemberRegistrationImpl implements memberRegistrationService {
+public class MemberRegistrationImpl implements MemberRegistrationService {
 
-    private final memberRegistrationRepository memberRegistrationRepository;
+    private final MemberRegistrationRepository memberRegistrationRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public MemberRegistrationImpl(memberRegistrationRepository memberRegistrationRepository) {
+    public MemberRegistrationImpl(MemberRegistrationRepository memberRegistrationRepository, PasswordEncoder passwordEncoder) {
         this.memberRegistrationRepository = memberRegistrationRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public List<memberRegistrationDto> findAllmemberRegistration() {
+    public List<MemberRegistrationDto> findAllMemberRegistrations() {
         return memberRegistrationRepository.findAll()
                 .stream()
                 .map(this::mapToMemberRegistrationDto)
@@ -31,41 +34,51 @@ public class MemberRegistrationImpl implements memberRegistrationService {
     }
 
     @Override
-    public memberRegistrationDto mapToMemberRegistrationDto(memberRegistration memberRegistration) {
-        return memberRegistrationDto.builder()
+    public MemberRegistrationDto mapToMemberRegistrationDto(MemberRegistration memberRegistration) {
+        return MemberRegistrationDto.builder()
                 .memberId(String.valueOf(memberRegistration.getId()))
                 .fullName(memberRegistration.getFullName())
                 .email(memberRegistration.getEmail())
                 .phone(memberRegistration.getPhone())
-                .DOB (memberRegistration.getDob())
-                .Address(memberRegistration.getAddress())
+                .dob(memberRegistration.getDob())
+                .address(memberRegistration.getAddress())
                 .dateJoined(memberRegistration.getDateJoined())
+                .password(memberRegistration.getPassword())
                 .build();
     }
 
     @Override
-    public memberRegistrationDto createMember(memberRegistrationDto memberDto) {
-        memberRegistration member = new memberRegistration();
-        member.setFullName(memberDto.getFullName());
-        member.setEmail(memberDto.getEmail());
-        member.setPhone(memberDto.getPhone());
-        member.setDob(memberDto.getDOB());
-        member.setAddress(memberDto.getAddress());
-        member.setDateJoined(LocalDate.now());
-        member = memberRegistrationRepository.save(member);
-        return mapToMemberRegistrationDto(member);
+    public MemberRegistrationDto createMember(MemberRegistrationDto memberDto) {
+        validatePasswords(memberDto);
+
+        // Just return the DTO after validation; no saving
+        return MemberRegistrationDto.builder()
+                .fullName(memberDto.getFullName())
+                .email(memberDto.getEmail())
+                .phone(memberDto.getPhone())
+                .dob(memberDto.getDob())
+                .address(memberDto.getAddress())
+                .dateJoined(memberDto.getDateJoined()) // Keep as provided from controller
+                .password(passwordEncoder.encode(memberDto.getPassword())) // Encode here if needed
+                .confirmPassword(memberDto.getConfirmPassword())
+                .build();
     }
 
     @Override
-    public memberRegistrationDto updateMember(Long id, memberRegistrationDto memberDto) {
-        Optional<memberRegistration> optionalMember = memberRegistrationRepository.findById(id);
+    public MemberRegistrationDto updateMember(Long id, MemberRegistrationDto memberDto) {
+        validatePasswords(memberDto);
+
+        Optional<MemberRegistration> optionalMember = memberRegistrationRepository.findById(id);
         if (optionalMember.isPresent()) {
-            memberRegistration member = optionalMember.get();
+            MemberRegistration member = optionalMember.get();
             member.setFullName(memberDto.getFullName());
             member.setEmail(memberDto.getEmail());
             member.setPhone(memberDto.getPhone());
-            member.setDob(memberDto.getDOB());
+            member.setDob(memberDto.getDob());
             member.setAddress(memberDto.getAddress());
+            if (memberDto.getPassword() != null && !memberDto.getPassword().isEmpty()) {
+                member.setPassword(passwordEncoder.encode(memberDto.getPassword()));
+            }
             member = memberRegistrationRepository.save(member);
             return mapToMemberRegistrationDto(member);
         } else {
@@ -79,6 +92,15 @@ public class MemberRegistrationImpl implements memberRegistrationService {
             memberRegistrationRepository.deleteById(id);
         } else {
             throw new RuntimeException("Member not found with ID: " + id);
+        }
+    }
+
+    private void validatePasswords(MemberRegistrationDto memberDto) {
+        if (memberDto.getPassword() == null || memberDto.getConfirmPassword() == null) {
+            throw new IllegalArgumentException("Password and Confirm Password must not be null");
+        }
+        if (!memberDto.getPassword().equals(memberDto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password and Confirm Password do not match");
         }
     }
 }

@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @Table(name = "member_registration")
-public class memberRegistration {
+public class MemberRegistration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,8 +25,9 @@ public class memberRegistration {
     private String email;
     private String phone;
     private LocalDate dob;
-    private String Address;
+    private String address;
     @CreationTimestamp
     private LocalDate dateJoined;
+    private String password;
 
 }
