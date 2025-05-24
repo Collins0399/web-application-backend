@@ -1,30 +1,31 @@
 package com.example.church_management_system.controller;
 
 import com.example.church_management_system.Dto.Auth.LoginDto;
-import com.example.church_management_system.Models.MemberRegistration;
-import com.example.church_management_system.service.UserService;
+import com.example.church_management_system.Models.Admin;
+import com.example.church_management_system.config.KeyEncoder;
+import com.example.church_management_system.repository.AdminRepository;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import com.example.church_management_system.Models.Admin;
-import com.example.church_management_system.repository.AdminRepository;
+import java.security.Key;
 
+import java.util.Date;
 import java.util.Optional;
+import java.util.Base64;
 
 @RestController
 @RequestMapping("/api")
 public class AuthController {
 
-    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final AdminRepository adminRepository;
-    private final String ADMIN_ROLE = "ADMIN";
 
 
     @Autowired
-    public AuthController(UserService userService, PasswordEncoder passwordEncoder , AdminRepository adminRepository) {
-        this.userService = userService;
+    public AuthController(PasswordEncoder passwordEncoder, AdminRepository adminRepository) {
         this.passwordEncoder = passwordEncoder;
         this.adminRepository = adminRepository;
     }
@@ -33,67 +34,67 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
         try {
-            // Use email directly for login
             String email = loginDto.getEmail();
+            String password = loginDto.getPassword();
 
-            // Check if email is null
-            if (email == null) {
-                System.out.println("Email is null");
+            if (email == null || email.isEmpty()) {
                 return ResponseEntity.badRequest().body(new ErrorResponse("Email is required"));
             }
 
-// Check if the user is an admin
             Optional<Admin> admin = adminRepository.findByEmail(email);
-            if (admin.isPresent() && passwordEncoder.matches(loginDto.getPassword(), admin.get().getPassword())) {
-                return ResponseEntity.ok(new LoginResponse("Login successful", "admin"));
+            if (admin.isPresent() && passwordEncoder.matches(password, admin.get().getPassword())) {
+                String token = generateToken(email);
+                LoginResponse loginResponse = new LoginResponse("Login successful", "admin", true, token);
+                return ResponseEntity.ok(loginResponse);
             }
-
-// Check if the user is a member
-            Optional<MemberRegistration> member = userService.findUserByEmail(email);
-            if (member.isPresent() && passwordEncoder.matches(loginDto.getPassword(), member.get().getPassword())) {
-                return ResponseEntity.ok(new LoginResponse("Login successful", "member"));
-            }
-
 
             return ResponseEntity.badRequest().body(new ErrorResponse("Invalid email or password"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse("An error occurred"));
+            e.printStackTrace(); // Log the error for debugging
+            return ResponseEntity.status(500).body(new ErrorResponse("An error occurred"));
         }
     }
 
-    // Response classes for consistent JSON responses
-    static class SuccessResponse {
-        private String message;
+    private String generateToken(String email) {
+        Key secretKey = KeyEncoder.getSecretKey();
 
-        public SuccessResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day expiration
+                .signWith(secretKey) // Use the Key object
+                .compact();
     }
 
     static class ErrorResponse {
         private String error;
+        private boolean success;
 
         public ErrorResponse(String error) {
             this.error = error;
+            this.success = false;
         }
 
         public String getError() {
             return error;
         }
+
+        public boolean isSuccess() {
+            return success;
+        }
     }
+
     static class LoginResponse {
         private String message;
         private String role;
-        private Long Id;
+        private boolean success;
+        private String token;
 
-        public LoginResponse(String message, String role) {
+        public LoginResponse(String message, String role, boolean success, String token) {
             this.message = message;
             this.role = role;
-            this.Id = Id;
+            this.success = success;
+            this.token = token;
         }
 
         public String getMessage() {
@@ -103,8 +104,13 @@ public class AuthController {
         public String getRole() {
             return role;
         }
-        public Long getId(){
-            return Id;
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getToken() {
+            return token;
         }
     }
 }

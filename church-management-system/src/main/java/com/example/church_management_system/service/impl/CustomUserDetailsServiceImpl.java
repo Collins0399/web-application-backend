@@ -23,7 +23,6 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(member.getEmail())
-                .password(member.getPassword())
                 .build();
     }
 }

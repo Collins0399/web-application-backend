@@ -28,6 +28,5 @@ public class MemberRegistration {
     private String address;
     @CreationTimestamp
     private LocalDate dateJoined;
-    private String password;
 
 }

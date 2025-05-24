@@ -4,11 +4,11 @@ import com.example.church_management_system.Models.MemberRegistration;
 import com.example.church_management_system.Dto.MemberRegistrationDto;
 import com.example.church_management_system.repository.MemberRegistrationRepository;
 import com.example.church_management_system.service.MemberRegistrationService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,7 +20,7 @@ public class MemberRegistrationImpl implements MemberRegistrationService {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public MemberRegistrationImpl(MemberRegistrationRepository memberRegistrationRepository, PasswordEncoder passwordEncoder) {
+    public MemberRegistrationImpl(MemberRegistrationRepository memberRegistrationRepository, PasswordEncoder passwordEncoder, RabbitTemplate rabbitTemplate) {
         this.memberRegistrationRepository = memberRegistrationRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -36,20 +36,17 @@ public class MemberRegistrationImpl implements MemberRegistrationService {
     @Override
     public MemberRegistrationDto mapToMemberRegistrationDto(MemberRegistration memberRegistration) {
         return MemberRegistrationDto.builder()
-                .memberId(String.valueOf(memberRegistration.getId()))
                 .fullName(memberRegistration.getFullName())
                 .email(memberRegistration.getEmail())
                 .phone(memberRegistration.getPhone())
                 .dob(memberRegistration.getDob())
                 .address(memberRegistration.getAddress())
                 .dateJoined(memberRegistration.getDateJoined())
-                .password(memberRegistration.getPassword())
                 .build();
     }
 
     @Override
     public MemberRegistrationDto createMember(MemberRegistrationDto memberDto) {
-        validatePasswords(memberDto);
 
         // Just return the DTO after validation; no saving
         return MemberRegistrationDto.builder()
@@ -59,14 +56,11 @@ public class MemberRegistrationImpl implements MemberRegistrationService {
                 .dob(memberDto.getDob())
                 .address(memberDto.getAddress())
                 .dateJoined(memberDto.getDateJoined()) // Keep as provided from controller
-                .password(passwordEncoder.encode(memberDto.getPassword())) // Encode here if needed
-                .confirmPassword(memberDto.getConfirmPassword())
                 .build();
     }
 
     @Override
     public MemberRegistrationDto updateMember(Long id, MemberRegistrationDto memberDto) {
-        validatePasswords(memberDto);
 
         Optional<MemberRegistration> optionalMember = memberRegistrationRepository.findById(id);
         if (optionalMember.isPresent()) {
@@ -76,9 +70,6 @@ public class MemberRegistrationImpl implements MemberRegistrationService {
             member.setPhone(memberDto.getPhone());
             member.setDob(memberDto.getDob());
             member.setAddress(memberDto.getAddress());
-            if (memberDto.getPassword() != null && !memberDto.getPassword().isEmpty()) {
-                member.setPassword(passwordEncoder.encode(memberDto.getPassword()));
-            }
             member = memberRegistrationRepository.save(member);
             return mapToMemberRegistrationDto(member);
         } else {
@@ -95,12 +86,4 @@ public class MemberRegistrationImpl implements MemberRegistrationService {
         }
     }
 
-    private void validatePasswords(MemberRegistrationDto memberDto) {
-        if (memberDto.getPassword() == null || memberDto.getConfirmPassword() == null) {
-            throw new IllegalArgumentException("Password and Confirm Password must not be null");
-        }
-        if (!memberDto.getPassword().equals(memberDto.getConfirmPassword())) {
-            throw new IllegalArgumentException("Password and Confirm Password do not match");
-        }
-    }
 }

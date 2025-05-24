@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -28,7 +29,7 @@ public class MemberRegistrationController {
         this.memberRegistrationService = memberRegistrationService;
     }
 
-    // Get all members
+    // Get all members from the server
     @GetMapping
     public ResponseEntity<?> getAllMembers() {
         return ResponseEntity.ok(memberRegistrationRepository.findAll());
@@ -50,13 +51,26 @@ public class MemberRegistrationController {
         member.setDob(preparedDto.getDob());
         member.setAddress(preparedDto.getAddress());
         member.setDateJoined(preparedDto.getDateJoined() != null ? preparedDto.getDateJoined() : LocalDate.now());
-        member.setPassword(preparedDto.getPassword());
 
         memberRegistrationRepository.save(member);
 
         response.put("status", "success");
         response.put("message", "Member created successfully");
         return ResponseEntity.ok(response);
+    }
+    //  Get a single member by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getMemberById(@PathVariable Long id) {
+        Optional<MemberRegistration> memberOptional = memberRegistrationRepository.findById(id);
+
+        if (memberOptional.isPresent()) {
+            return ResponseEntity.ok(memberOptional.get());
+        } else {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("message", "Member not found with ID: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
     }
 
 
@@ -65,12 +79,6 @@ public class MemberRegistrationController {
     public ResponseEntity<Map<String, Object>> updateMember(@PathVariable Long id, @RequestBody MemberRegistrationDto memberDto) {
         Map<String, Object> response = new HashMap<>();
 
-        if (!memberDto.getPassword().equals(memberDto.getConfirmPassword())) {
-            response.put("status", "error");
-            response.put("message", "Password and Confirm Password do not match");
-            return ResponseEntity.badRequest().body(response);
-        }
-
         return memberRegistrationRepository.findById(id).map(existingMember -> {
             existingMember.setFullName(memberDto.getFullName());
             existingMember.setEmail(memberDto.getEmail());
@@ -78,7 +86,6 @@ public class MemberRegistrationController {
             existingMember.setDob(memberDto.getDob());
             existingMember.setAddress(memberDto.getAddress());
             existingMember.setDateJoined(memberDto.getDateJoined());
-            existingMember.setPassword(passwordEncoder.encode(memberDto.getPassword()));
             memberRegistrationRepository.save(existingMember);
 
             response.put("status", "success");
