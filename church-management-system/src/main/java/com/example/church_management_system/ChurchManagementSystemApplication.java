@@ -16,7 +16,5 @@ public class ChurchManagementSystemApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ChurchManagementSystemApplication.class, args);
 	}
-
-
 }
 

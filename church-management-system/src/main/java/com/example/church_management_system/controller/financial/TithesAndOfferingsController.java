@@ -17,26 +17,26 @@ public class TithesAndOfferingsController {
     @Autowired
     private TithesAndOfferingService tithesAndOfferingService;
 
-    @PostMapping("/tithes-and-offerings")
+    @PostMapping("/tithes-offerings")
     public ResponseEntity<String> saveTithesAndOfferings(@RequestBody TithesAndOfferings tithesAndOfferings) {
         TithesAndOfferings saved = tithesAndOfferingService.saveTithesAndOfferings(tithesAndOfferings);
         return ResponseEntity.ok("Tithes and Offerings saved successfully");
     }
 
-    @GetMapping("/tithes-and-offerings")
+    @GetMapping("/tithes-offerings")
     public ResponseEntity<List<TithesAndOfferings>> getAllTithesAndOfferings() {
         List<TithesAndOfferings> allRecords = tithesAndOfferingService.getAllTithesAndOfferings();
         return ResponseEntity.ok(allRecords);
     }
 
-    @GetMapping("/tithes-and-offerings/{id}")
+    @GetMapping("/tithes-offerings/{id}")
     public ResponseEntity<Object> getTithesAndOfferingsById(@PathVariable Long id) {
         Optional<TithesAndOfferings> record = tithesAndOfferingService.getTithesAndOfferingsById(id);
         return record.<ResponseEntity<Object>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(404).body("Tithes and Offerings not found with ID: " + id));
     }
 
-    @PutMapping("/tithes-and-offerings/{id}")
+    @PutMapping("/tithes-offerings/{id}")
     public ResponseEntity<String> updateTithesAndOfferings(@PathVariable Long id, @RequestBody TithesAndOfferings tithesAndOfferings) {
         try {
             TithesAndOfferings updated = tithesAndOfferingService.updateTithesAndOfferings(id, tithesAndOfferings);
@@ -46,7 +46,7 @@ public class TithesAndOfferingsController {
         }
     }
 
-    @DeleteMapping("/tithes-and-offerings/{id}")
+    @DeleteMapping("/tithes-offerings/{id}")
     public ResponseEntity<String> deleteTithesAndOfferings(@PathVariable Long id) {
         try {
             tithesAndOfferingService.deleteTithesAndOfferings(id);

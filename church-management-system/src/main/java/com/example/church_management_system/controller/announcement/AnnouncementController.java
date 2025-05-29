@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -22,49 +23,46 @@ public class AnnouncementController {
 
     // Create a new announcement
     @PostMapping
-    public ResponseEntity<?> createAnnouncement(@RequestBody AnnouncementDto dto) {
+    public ResponseEntity<AnnouncementDto> createAnnouncement(@RequestBody AnnouncementDto dto) {
         AnnouncementDto created = announcementService.createAnnouncement(dto);
-        return ResponseEntity.ok().body("Announcement created successfully: " + created.getTitle());
+        return ResponseEntity.ok(created);
     }
 
     // Get an announcement by ID
     @GetMapping("/{id}")
-    public ResponseEntity<?> getAnnouncementById(@PathVariable Long id) {
+    public ResponseEntity<List<AnnouncementDto>> getAnnouncementById(@PathVariable Long id) {
         AnnouncementDto dto = announcementService.getAnnouncementById(id);
-        return ResponseEntity.ok().body("Announcement fetched successfully:\n" + dto);
+        if (dto == null) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+        return ResponseEntity.ok(Collections.singletonList(dto));
     }
 
     // Get all announcements
     @GetMapping
-    public ResponseEntity<?> getAllAnnouncements() {
+    public ResponseEntity<List<AnnouncementDto>> getAllAnnouncements() {
         List<AnnouncementDto> list = announcementService.getAllAnnouncements();
-        if (list.isEmpty()) {
-            return ResponseEntity.ok().body("No announcements found.");
-        }
-        return ResponseEntity.ok().body("Total announcements found: " + list.size() + "\n" + list);
+        return ResponseEntity.ok(list);
     }
 
     // Get only active announcements
     @GetMapping("/active")
-    public ResponseEntity<?> getActiveAnnouncements() {
+    public ResponseEntity<List<AnnouncementDto>> getActiveAnnouncements() {
         List<AnnouncementDto> activeList = announcementService.getActiveAnnouncements();
-        if (activeList.isEmpty()) {
-            return ResponseEntity.ok().body("No active announcements at the moment.");
-        }
-        return ResponseEntity.ok().body("Active announcements:\n" + activeList);
+        return ResponseEntity.ok(activeList);
     }
 
     // Update an announcement
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAnnouncement(@PathVariable Long id, @RequestBody AnnouncementDto dto) {
+    public ResponseEntity<AnnouncementDto> updateAnnouncement(@PathVariable Long id, @RequestBody AnnouncementDto dto) {
         AnnouncementDto updated = announcementService.updateAnnouncement(id, dto);
-        return ResponseEntity.ok().body("Announcement updated successfully: " + updated.getTitle());
+        return ResponseEntity.ok(updated);
     }
 
     // Delete an announcement
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteAnnouncement(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteAnnouncement(@PathVariable Long id) {
         announcementService.deleteAnnouncement(id);
-        return ResponseEntity.ok().body("Announcement with ID " + id + " deleted successfully.");
+        return ResponseEntity.noContent().build();
     }
 }
