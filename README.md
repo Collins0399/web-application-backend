@@ -99,7 +99,7 @@ church-management-system/
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/church-management-backend.git
+   git clone [https://github.com/Collins0399/web-application-backend.git]
    cd church-management-backend
 Create PostgreSQL Database
 
