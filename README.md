@@ -18,25 +18,42 @@ This is the backend of the **Church Management System**, developed using **Sprin
 
 ---
 
-## 📁 Project Structure
+## 📁 Project Structure example with Event management module
 
-church-management-backend/
+church-management-system/
 ├── src/
-│ ├── main/
-│ │ ├── java/com/church/
-│ │ │ ├── controller/
-│ │ │ ├── service/
-│ │ │ ├── repository/
-│ │ │ ├── model/
-│ │ │ └── security/
-│ │ └── resources/
-│ │ └── application.properties
-├── pom.xml or build.gradle
-└── README.md
-
-markdown
-Copy
-Edit
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/example/church_management_system/
+│   │   │       ├── controller/
+│   │   │       │   └── event/
+│   │   │       │       └── EventController.java
+│   │   │       ├── dto/
+│   │   │       │   └── event/
+│   │   │       │       └── EventDto.java
+│   │   │       ├── exception/
+│   │   │       │   └── GlobalExceptionHandler.java
+│   │   │       ├── model/
+│   │   │       │   └── Event.java
+│   │   │       ├── repository/
+│   │   │       │   └── event/
+│   │   │       │       └── EventRepository.java
+│   │   │       ├── service/
+│   │   │       │   ├── event/
+│   │   │       │   │   └── EventService.java
+│   │   │       │   └── impl/
+│   │   │       │       └── event/
+│   │   │       │           └── EventServiceImpl.java
+│   │   │       └── ChurchManagementSystemApplication.java
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       └── static/ (optional for static frontend assets)
+│   │       └── templates/ (optional for Thymeleaf)
+│   └── test/
+│       └── java/
+│           └── com/example/church_management_system/
+│               └── ChurchManagementSystemApplicationTests.java
+└── pom.xml
 
 ---
 
@@ -45,16 +62,14 @@ Edit
 ### 🔐 Admin Authentication
 - Secure login for church administrators
 - JWT-based token authentication
-- Role-based access control
 
 ### 👥 Member Management
-- Register, view, update, and deactivate member records
+- Register, view, update, and delete member records
 - Search and filter members
 
 ### 💰 Finance Management
 - Record tithes, offerings, and donations
 - Track income and expenses
-- Generate financial reports
 
 ### 📢 Announcement Management
 - Create and manage announcements
@@ -75,7 +90,7 @@ Edit
 ### Prerequisites
 
 - Java 17+
-- Maven or Gradle
+- Maven 
 - PostgreSQL
 - Git
 
@@ -139,10 +154,5 @@ Edit
 Response: JWT token
 
 Include the returned token in the Authorization header of subsequent requests:
-
-makefile
-Copy
-Edit
-Authorization: Bearer <token>
 
 
