@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class SecurityConfig {
+
     private final CustomUserDetailsService customUserDetailsService;
 
     public SecurityConfig(CustomUserDetailsService customUserDetailsService) {
@@ -23,15 +25,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll() // Allow public access to authentication endpoints
-                        .anyRequest().authenticated() // Require authentication for other endpoints
+                        .requestMatchers("/api/announcements/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
+                        .anyRequest().authenticated()
                 )
-                .userDetailsService(customUserDetailsService)
-                .formLogin(form -> form.permitAll()) // Enable form-based login
-                .logout(logout -> logout.permitAll()); // Enable logout functionality
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .userDetailsService(customUserDetailsService);
+
         return http.build();
     }
 
@@ -40,18 +43,22 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:5173")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
+            }
+        };
     }
-
-    // Utility method to encode passwords
-    public static void main(String[] args) {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        String rawPassword = "1234"; // Example raw password
-        String encodedPassword = encoder.encode(rawPassword);
-        System.out.println("Encoded Password: " + encodedPassword);
-    }
-
 }

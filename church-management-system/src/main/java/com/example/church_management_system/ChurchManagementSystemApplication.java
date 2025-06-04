@@ -10,6 +10,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
+@EnableRabbit
 public class ChurchManagementSystemApplication {
 
 	public static void main(String[] args) {
